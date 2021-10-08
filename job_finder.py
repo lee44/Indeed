@@ -13,7 +13,7 @@ def find_jobs(job_title, location, pages):
     results = []
     i = 0
     while i < pages:
-        job_soup = load_indeed_jobs_div(job_title, location, i*10)
+        job_soup = load_indeed_jobs(job_title, location, i*10)
         results.append(extract_job_info(job_soup))
         i += 1
 
@@ -55,7 +55,8 @@ def find_jobs(job_title, location, pages):
 ## ================== FUNCTIONS FOR INDEED =================== ##
 
 
-def load_indeed_jobs_div(job_title, location, page):
+def load_indeed_jobs(job_title, location, page):
+    # First page on Indeed doesn't have a "start" url parameter
     if page == 0:
         url_param = {'q': job_title, 'l': location}
     else:
@@ -78,25 +79,25 @@ def extract_job_info(job_soup):
     titles = []
     cols.append('titles')
     for job_elem in job_elems:
-        titles.append(extract_job_title_indeed(job_elem))
+        titles.append(extract_job_title(job_elem))
     extracted_info.append(titles)
 
     companies = []
     cols.append('companies')
     for job_elem in job_elems:
-        companies.append(extract_company_indeed(job_elem))
+        companies.append(extract_company(job_elem))
     extracted_info.append(companies)
 
     links = []
     cols.append('links')
     for job_elem in job_elems:
-        links.append(extract_link_indeed(job_elem))
+        links.append(extract_link(job_elem))
     extracted_info.append(links)
 
     dates = []
     cols.append('age')
     for job_elem in job_elems:
-        dates.append(extract_date_indeed(job_elem))
+        dates.append(extract_date(job_elem))
     extracted_info.append(dates)
 
     jobs_list = {}
@@ -107,14 +108,14 @@ def extract_job_info(job_soup):
     return jobs_list
 
 
-def extract_job_title_indeed(job_elem):
+def extract_job_title(job_elem):
     h2_elem = job_elem.find('h2', class_='jobTitle')
     title_elem = h2_elem.findChildren('span', recursive=True)
     title = title_elem[len(title_elem)-1].text
     return title
 
 
-def extract_company_indeed(job_elem):
+def extract_company(job_elem):
     span_elem = job_elem.find('span', class_='companyName')
     company_elem = span_elem.findChildren('a', recursive=False)
     if(len(company_elem) > 0):
@@ -122,12 +123,12 @@ def extract_company_indeed(job_elem):
     return ""
 
 
-def extract_link_indeed(job_elem):
+def extract_link(job_elem):
     link = 'www.Indeed.com' + job_elem['href']
     return link
 
 
-def extract_date_indeed(job_elem):
+def extract_date(job_elem):
     date_elem = job_elem.find('span', class_='date')
     date = date_elem.text
     return date
