@@ -1,58 +1,50 @@
-import datetime
 import urllib
 import webbrowser
+from os.path import exists
 
-import numpy as np
-import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
 
-def find_jobs(job_title, location, pages):
+def find_jobs(job_title, location, jobs):
 
-    results = []
     i = 0
-    while i < pages:
+    while True:
         job_soup = load_indeed_jobs(job_title, location, i*10)
-        results.append(extract_job_info(job_soup))
         i += 1
 
-    titles = []
-    companies = []
-    links = []
-    age = []
-    for page in results:
-        if list(page.keys())[0] == 'titles':
-            titles.append(page['titles'])
-        if list(page.keys())[1] == 'companies':
-            companies.append(pages['companies'])
-        if list(page.keys())[2] == 'links':
-            links.append(page['links'])
-        if list(page.keys())[3] == 'age':
-            age.append(page['age'])
+        links = getLinks(job_soup)
 
-    numpyTitles = np.asarray(titles)
-    numpyCompanies = np.asarray(companies)
-    numpyLinks = np.asarray(links)
-    numpyAge = np.asarray(age)
+        if not(exists('applied.txt')):
+            open('applied.txt', 'x')
 
-    excel = {}
-    excel['titles'] = numpyTitles.flatten()
-    excel['companies'] = numpyCompanies.flatten()
-    excel['links'] = numpyLinks.flatten()
-    excel['age'] = numpyAge.flatten()
+        with open('applied.txt', 'r') as file:
+            lines = file.readlines()
 
-    chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe  --profile-directory="Profile 3" %s'
+        with open('applied.txt', 'a') as file:
+            if(len(lines) != 0):
+                for index, link in enumerate(links):
+                    if link+'\n' in lines:
+                        links[index] = ''
+                    else:
+                        file.write(link+'\n')
+                        print("Added: ", link)
+            else:
+                for link in links:
+                    file.write(link+'\n')
 
-    for link in excel['links']:
-        webbrowser.get(chrome_path).open(link)
+        links = list(filter(lambda x: x != '', links))
 
-    # dateTime = datetime.datetime.now()
-    # filename = "results {}-{}-{}.xlsx".format(
-    #     dateTime.month, dateTime.day, dateTime.year)
-    # save_jobs_to_excel(excel, filename)
+        if len(links) < jobs:
+            continue
+        elif len(links) > jobs:
+            del links[jobs:len(links)]
 
-## ================== FUNCTIONS FOR INDEED =================== ##
+        chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe  --profile-directory="Profile 3" %s'
+        for link in links:
+            if link != '':
+                webbrowser.get(chrome_path).open(link)
+        break
 
 
 def load_indeed_jobs(job_title, location, page):
@@ -70,57 +62,15 @@ def load_indeed_jobs(job_title, location, page):
     return job_soup
 
 
-def extract_job_info(job_soup):
+def getLinks(job_soup):
     job_elems = job_soup.find_all('a', class_="tapItem")
 
-    cols = []
-    extracted_info = []
-
-    titles = []
-    cols.append('titles')
-    for job_elem in job_elems:
-        titles.append(extract_job_title(job_elem))
-    extracted_info.append(titles)
-
-    companies = []
-    cols.append('companies')
-    for job_elem in job_elems:
-        companies.append(extract_company(job_elem))
-    extracted_info.append(companies)
-
     links = []
-    cols.append('links')
+
     for job_elem in job_elems:
         links.append(extract_link(job_elem))
-    extracted_info.append(links)
 
-    dates = []
-    cols.append('age')
-    for job_elem in job_elems:
-        dates.append(extract_date(job_elem))
-    extracted_info.append(dates)
-
-    jobs_list = {}
-
-    for j in range(len(cols)):
-        jobs_list[cols[j]] = extracted_info[j]
-
-    return jobs_list
-
-
-def extract_job_title(job_elem):
-    h2_elem = job_elem.find('h2', class_='jobTitle')
-    title_elem = h2_elem.findChildren('span', recursive=True)
-    title = title_elem[len(title_elem)-1].text
-    return title
-
-
-def extract_company(job_elem):
-    span_elem = job_elem.find('span', class_='companyName')
-    company_elem = span_elem.findChildren('a', recursive=False)
-    if(len(company_elem) > 0):
-        return company_elem[len(company_elem)-1].text
-    return ""
+    return links
 
 
 def extract_link(job_elem):
@@ -128,19 +78,4 @@ def extract_link(job_elem):
     return link
 
 
-def extract_date(job_elem):
-    date_elem = job_elem.find('span', class_='date')
-    date = date_elem.text
-    return date
-
-## ======================= GENERIC FUNCTIONS ======================= ##
-
-
-def save_jobs_to_excel(jobs_list, filename):
-    jobs = pd.DataFrame(jobs_list)
-    jobs.to_excel(filename, index=False, header=True)
-
-## ================================================================= ##
-
-
-find_jobs("software internship", "united states", 1)
+find_jobs("software internship", "united states", 10)
