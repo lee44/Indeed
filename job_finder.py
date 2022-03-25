@@ -1,51 +1,58 @@
-import urllib
 import webbrowser
+from doctest import script_from_examples
 from os.path import exists
 
-import requests
 from bs4 import BeautifulSoup
 
 import get_job_postings
 import get_links
 
 
-def find_jobs(job_title, location, jobs):
+# cd env/Scripts
+# . activate
+def find_jobs(job_title, job_location='United States', job_limit=10):
 
     i = 0
+    jobs_applied = 'jobs_applied.txt'
     while True:
-        job_postings = get_job_postings(job_title, location, i*10)
+        job_postings = get_job_postings(job_title, job_location, i)
         i += 1
 
-        links = get_links(job_postings)
+        url_list = get_links(job_postings)
 
-        if len(links) > jobs:
-            del links[jobs:len(links)]
+        # If the length of url_list exceeds job_limit, delete all indexes after the job_limit so length of url_list matches job_limit
+        if len(url_list) > job_limit:
+            del url_list[job_limit:len(url_list)]
 
-        if not(exists('applied.txt')):
-            open('applied.txt', 'x')
+        # Creates a file if it doesn't exists
+        if not(exists(jobs_applied)):
+            open(jobs_applied, 'x')
 
-        with open('applied.txt', 'r') as file:
+        with open(jobs_applied, 'r') as file:
             lines = file.readlines()
 
-        with open('applied.txt', 'a') as file:
+        with open(jobs_applied, 'a') as file:
+            # if jobs_applied file is not empty, check if link exists inside file
             if(len(lines) != 0):
-                for index, link in enumerate(links):
-                    if link+'\n' in lines:
-                        links[index] = ''
+                for index, link in enumerate(url_list):
+                    if link + '\n' in lines:
+                        url_list[index] = ''
                     else:
-                        file.write(link+'\n')
-                        # print("Added: ", link)
+                        file.write(link + '\n')
+
+            # # if jobs_applied file is empty, append link to file
             else:
-                for link in links:
-                    file.write(link+'\n')
+                for link in url_list:
+                    file.write(link + '\n')
 
-        links = list(filter(lambda x: x != '', links))
+        # Filters any empty indexes in the list
+        url_list = list(filter(lambda x: x != '', url_list))
 
-        if len(links) < jobs:
+        if len(url_list) < job_limit:
             continue
 
         chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe  --profile-directory="Profile 3" %s'
-        for link in links:
+        for link in url_list:
             if link != '':
                 webbrowser.get(chrome_path).open(link)
         break
