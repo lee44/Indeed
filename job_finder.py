@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 import get_job_postings
 import get_links
-
+import generate_cover_letter
 
 # cd env/Scripts
 # . activate
@@ -50,6 +50,8 @@ def find_jobs(job_title, job_location='United States', job_limit=10):
 
         if len(url_list) < job_limit:
             continue
+        
+        generate_cover_letter(url_list)
 
         chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe  --profile-directory="Profile 3" %s'
         for link in url_list:
