@@ -1,19 +1,21 @@
+import os
 import webbrowser
 from doctest import script_from_examples
 from os.path import exists
 
 from bs4 import BeautifulSoup
 
+import generate_cover_letter
 import get_job_postings
 import get_links
-import generate_cover_letter
+
 
 # cd env/Scripts
 # . activate
 def find_jobs(job_title, job_location='United States', job_limit=10):
 
     i = 0
-    jobs_applied = 'jobs_applied.txt'
+    jobs_applied = os.path.join(os.path.dirname(__file__),'jobs_applied.txt')
     while True:
         job_postings = get_job_postings(job_title, job_location, i)
         i += 1

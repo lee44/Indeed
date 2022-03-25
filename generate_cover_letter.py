@@ -1,3 +1,5 @@
+import os
+
 import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
 from docx import Document
@@ -6,7 +8,8 @@ from docxtpl import DocxTemplate
 
 def generate_cover_letter(url_links):
     
-    with open('requirement_key_words.txt') as f:
+    path = os.path.join(os.path.dirname(__file__),'config','requirement_key_words.txt')
+    with open(path) as f:
         keyword_list = f.read().splitlines()
     
     for i,url in enumerate(url_links):
@@ -50,7 +53,8 @@ def generate_cover_letter(url_links):
 
             # Render automated report
             template.render(context)
-            template.save(f'Cover Letter v{i}.docx')
+            cover_letter_directory = os.path.join(os.path.dirname(__file__),'Generated Cover Letters',f'Cover Letter v{i}.docx')
+            template.save(cover_letter_directory)
 
 url_links = ['https://www.indeed.com/viewjob?jk=c6f4b97142480466&q=react&l=United+States&tk=1fuv3t4pb30a3000&from=web&advn=1943720292666236&adid=385865154&ad=-6NYlbfkN0A4ozdFxTnglSwjbUy0L1QJRbd3FSP9jCRwqNuyjBc7i2HBcOPywu9dv8lUjU2D2uTUAgBCKg1xCRIEnCYEpesu3i1_1gTpTdJSXals_jOjO2MKRxhW6q-Ca1o0yF0z_AjbC4msdEHOvmUwz4SAh5K1A7slUaX2w3lhO7WLEboQuS8Na1NkCyKa0KgpfhPAOQBIY6vkhABDu1W2OaA4hEPXZq7x9i5n2Pm8mdccM-R5qG8rUEuVRCQNviu1hc6JvAEZB0tAkSWE2DvmZM9XFE41dSnquNca_IVJlIb4s_o9SsS7XoqJoGlzuu5i2O0dH7Bn_e2TA1br3TwwAT4Soh7T90JzglVyjgtWBkb7Ld9_38oDPr09dDQo5a4vH5YS8_o%3D&pub=4a1b367933fd867b19b072952f68dceb&vjs=3']
 generate_cover_letter(url_links)
