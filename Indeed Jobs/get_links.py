@@ -1,4 +1,4 @@
-def getLinks(job_soup):
+def get_links(job_soup):
     job_elems = job_soup.find_all('a', class_="tapItem")
 
     links = []
@@ -10,5 +10,5 @@ def getLinks(job_soup):
 
 
 def append_link(job_elem):
-    link = 'www.Indeed.com' + job_elem['href']
+    link = 'https://www.Indeed.com' + job_elem['href']
     return link

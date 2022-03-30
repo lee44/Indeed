@@ -19,3 +19,5 @@ def get_job_postings(job_title, location, page):
     soup = BeautifulSoup(page.content, "html.parser")
     job_soup = soup.find('div', id="mosaic-provider-jobcards")
     return job_soup
+
+get_job_postings("react developer", "los angeles", 5)

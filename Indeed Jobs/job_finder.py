@@ -5,9 +5,9 @@ from os.path import exists
 
 from bs4 import BeautifulSoup
 
-import generate_cover_letter
-import get_job_postings
-import get_links
+from generate_cover_letters import generate_cover_letter
+from get_job_postings import get_job_postings
+from get_links import get_links
 
 
 # cd env/Scripts
